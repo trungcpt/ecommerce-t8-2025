@@ -1,3 +1,5 @@
+// import { User } from '@prisma/client';
+
 interface User {
   id: string;
   firstName: string;
