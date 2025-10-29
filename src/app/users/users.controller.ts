@@ -1,26 +1,63 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
-import type { User } from './users.interface';
+import type { CreateUserDto } from './dto/create-user.dto';
 
-@Controller('/users')
+@Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
-
-  @Get()
-  getUsers(): User[] {
-    const data = this.usersService.getUsers();
-    return data;
-  }
-
-  @Get(':id')
-  getUser(@Param('id') id: string): User {
-    const data = this.usersService.getUser(id);
-    return data;
-  }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  createUser(@Body() user: User): User {
-    this.usersService.createUser(user);
-    return user;
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.createUser(createUserDto);
   }
+
+  // @Get('export')
+  // @UseInterceptors(ExcelResponseInterceptor)
+  // async exportUsers(
+  //   @Query() exportUsersDto: ExportUsersDto,
+  //   @Res() res: Response,
+  // ) {
+  //   const workbook = await this.usersService.exportUsers(exportUsersDto);
+  //   await workbook.xlsx.write(res);
+  //   res.end();
+  //   return { message: 'Export success' };
+  // }
+
+  // @Post('import')
+  // @UseInterceptors(FileInterceptor('file'))
+  // importUsers(@UploadedFile() file: File, @User() user: UserInfo) {
+  //   return this.usersService.importUsers({ file, user });
+  // }
+
+  // @Get()
+  // @UsePipes(ParseParamsPaginationPipe)
+  // getUsers(@Query() query: GetUsersPaginationDto) {
+  //   return this.usersService.getUsers(query);
+  // }
+
+  // @Get('options')
+  // getUserOptions(@Query() query: GetOptionsParams<UserEntity>) {
+  //   return this.usersService.getOptions(query);
+  // }
+
+  // @Get(':id')
+  // getUser(@Param('id') id: UserEntity['id']) {
+  //   return this.usersService.getUser({ id });
+  // }
+
+  // @Patch(':id')
+  // updateUser(
+  //   @Param('id') id: UserEntity['id'],
+  //   @Body() updateUserDto: UpdateUserDto,
+  // ) {
+  //   return this.usersService.updateUser({
+  //     data: updateUserDto,
+  //     where: { id },
+  //   });
+  // }
+
+  // @Delete(':id')
+  // deleteUser(@Param('id') id: UserEntity['id']) {
+  //   return this.usersService.deleteUser({ id });
+  // }
 }

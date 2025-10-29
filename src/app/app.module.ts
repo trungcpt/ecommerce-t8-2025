@@ -2,14 +2,17 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsController } from './products/products.controller';
-import { UserModule } from './users/users.module';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from '../logger/logger.module';
 import { LoggingInterceptor } from '../logger/logging.interceptor';
 import { ZodExceptionFilter } from '../catch-everything/zod-exception/zod-exception.filter';
 import { ApiUtilModule } from '../common/utils/api-util/api-util.module';
 import { CatchEverythingFilter } from '../catch-everything/catch-everything.filter';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '../common/prisma/prisma.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 @Module({
   imports: [
@@ -19,8 +22,10 @@ import { ConfigModule } from '@nestjs/config';
       // validate: validate,
     }),
     LoggerModule,
-    UserModule,
+    PrismaModule,
+    UsersModule,
     ApiUtilModule,
+    AuthModule,
   ],
   controllers: [AppController, ProductsController],
   providers: [
@@ -30,6 +35,14 @@ import { ConfigModule } from '@nestjs/config';
       useClass: LoggingInterceptor,
     },
     ZodExceptionFilter,
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ZodSerializerInterceptor,
+    },
     {
       provide: APP_FILTER,
       useClass: CatchEverythingFilter,
