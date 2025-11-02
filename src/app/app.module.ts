@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsController } from './products/products.controller';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from '../logger/logger.module';
 import { LoggingInterceptor } from '../logger/logging.interceptor';
 import { ZodExceptionFilter } from '../catch-everything/zod-exception/zod-exception.filter';
@@ -13,6 +13,9 @@ import { PrismaModule } from '../common/prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { AccessControlGuard } from '../common/guards/access-control/access-control.guard';
+import { FormatResponseInterceptor } from '../common/interceptors/format-response/format-response.interceptor';
+import { AuthGuard } from './auth/auth.guard';
 
 @Module({
   imports: [
@@ -34,6 +37,14 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AccessControlGuard,
+    },
     ZodExceptionFilter,
     {
       provide: APP_PIPE,
@@ -46,6 +57,10 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
     {
       provide: APP_FILTER,
       useClass: CatchEverythingFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: FormatResponseInterceptor,
     },
   ],
 })
