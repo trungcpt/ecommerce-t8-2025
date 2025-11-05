@@ -16,6 +16,11 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AccessControlGuard } from '../common/guards/access-control/access-control.guard';
 import { FormatResponseInterceptor } from '../common/interceptors/format-response/format-response.interceptor';
 import { AuthGuard } from './auth/auth.guard';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolePermissionsModule } from './role-permissions/role-permissions.module';
+import { QueryUtilModule } from '../common/utils/query-util/query-util.module';
+import { FileUtilModule } from '../common/utils/file-util/file-util.module';
 
 @Module({
   imports: [
@@ -29,6 +34,11 @@ import { AuthGuard } from './auth/auth.guard';
     UsersModule,
     ApiUtilModule,
     AuthModule,
+    RolesModule,
+    PermissionsModule,
+    RolePermissionsModule,
+    QueryUtilModule,
+    FileUtilModule,
   ],
   controllers: [AppController, ProductsController],
   providers: [

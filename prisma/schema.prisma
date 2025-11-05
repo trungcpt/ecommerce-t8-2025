@@ -24,6 +24,16 @@ enum UserStatus {
   inactive
 }
 
+enum VendorStatus {
+  active
+  inactive
+}
+
+enum UserVendorRoleStatus {
+  active
+  inactive
+}
+
 model User {
   id          String     @id @default(uuid())
   email       String     @unique /// @zod.string.email()
@@ -41,9 +51,89 @@ model User {
   updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
 
-  // vendors         Vendor[]
-  // userVendorRoles UserVendorRole[]
+  vendors         Vendor[]
+  userVendorRoles UserVendorRole[]
   // orders          Order[]
   // cart            Cart?
   // notifications   Notification[]
+}
+
+model Vendor {
+  id            String       @id @default(uuid())
+  userID        String
+  name          String
+  slug          String       @unique
+  description   String?
+  logoUrl       String?
+  taxCode       String?
+  totalProducts Int          @default(0)
+  totalOrders   Int          @default(0)
+  status        VendorStatus @default(active)
+  createdAt     DateTime     @default(now())
+  createdBy     String?
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+
+  user            User             @relation(fields: [userID], references: [id]) // foreign key
+  // products        Product[]
+  userVendorRoles UserVendorRole[]
+}
+
+model Role {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  description  String?
+  isSystemRole Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  createdBy    String?
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  userVendorRoles UserVendorRole[]
+  rolePermissions RolePermission[]
+}
+
+model Permission {
+  id                 String    @id @default(uuid())
+  name               String
+  description        String?
+  // [route]_[action] (Ex: [/products]_[read], [/products]_[create], [/products]_[manage]) ||||| manage: create, read, delete, update
+  key                String
+  isSystemPermission Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  createdBy          String?
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  rolePermissions RolePermission[]
+
+  @@unique([name, key])
+}
+
+model RolePermission {
+  roleID       String
+  permissionID String
+  createdAt    DateTime @default(now())
+  createdBy    String?
+
+  role       Role       @relation(fields: [roleID], references: [id])
+  permission Permission @relation(fields: [permissionID], references: [id])
+
+  @@id([roleID, permissionID])
+}
+
+model UserVendorRole {
+  id        String               @id @default(uuid())
+  userID    String
+  vendorID  String
+  roleID    String
+  status    UserVendorRoleStatus @default(active)
+  createdAt DateTime             @default(now())
+  createdBy String?
+
+  user   User   @relation(fields: [userID], references: [id])
+  vendor Vendor @relation(fields: [vendorID], references: [id])
+  role   Role   @relation(fields: [roleID], references: [id])
+
+  @@unique([userID, vendorID])
 }

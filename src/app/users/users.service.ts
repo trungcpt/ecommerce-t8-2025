@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, VendorStatus } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { PrismaBaseService } from '../../common/services/prisma-base.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { IsExistPermissionKeyDto } from './dto/get-user.dto';
+import { Actions } from '../../common/guards/access-control/access-control.const';
 @Injectable()
 // implements Options<User>
 export class UsersService extends PrismaBaseService<'user'> {
-  private userEntityName = User.name;
   constructor(
     // private excelUtilService: ExcelUtilService,
     public prismaService: PrismaService,
@@ -127,65 +127,64 @@ export class UsersService extends PrismaBaseService<'user'> {
   // }
 
   async isSupperAdmin(userID: User['id']) {
-    return true;
-    // const data = await this.client.findFirst({
-    //   where: {
-    //     id: userID,
-    //     userVendorRoles: {
-    //       some: {
-    //         role: {
-    //           isSystemRole: true,
-    //         },
-    //       },
-    //     },
-    //   },
-    // });
-    // return data ? true : false;
+    const data = await this.client.findFirst({
+      where: {
+        id: userID,
+        userVendorRoles: {
+          some: {
+            role: {
+              isSystemRole: true,
+            },
+          },
+        },
+      },
+    });
+    return data ? true : false;
   }
 
   async isExistPermissionKey({
     userID,
     permissionKey,
   }: IsExistPermissionKeyDto) {
-    return true;
-    // const user = await this.client.findFirst({
-    //   include: {
-    //     userVendorRoles: {
-    //       select: {
-    //         role: {
-    //           select: {
-    //             rolePermissions: {
-    //               select: {
-    //                 permission: {
-    //                   select: {
-    //                     key: true,
-    //                   },
-    //                 },
-    //               },
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    //   where: {
-    //     id: userID,
-    //     userVendorRoles: {
-    //       some: { status: VendorStatus.active },
-    //     },
-    //   },
-    // });
-    // if (!user) return false;
+    const user = await this.client.findFirst({
+      include: {
+        userVendorRoles: {
+          select: {
+            role: {
+              select: {
+                rolePermissions: {
+                  select: {
+                    permission: {
+                      select: {
+                        key: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: userID,
+        userVendorRoles: {
+          some: { status: VendorStatus.active },
+        },
+      },
+    });
+    if (!user) return false;
 
-    // const [route] = permissionKey.split('_');
-    // const isExistPermission = user.userVendorRoles?.some((item) =>
-    //   item.role?.rolePermissions?.some(
-    //     (rp) =>
-    //       rp.permission?.key?.includes(permissionKey) ||
-    //       rp.permission?.key?.includes(`${route}_[${Actions.MANAGE}]`),
-    //   ),
-    // );
+    // permissionKey: [route]_[action] (Ex: [/products]_[read])
+    const [route] = permissionKey.split('_');
+    const isExistPermission = user.userVendorRoles?.some((item) =>
+      item.role?.rolePermissions?.some(
+        (rp) =>
+          rp.permission?.key?.includes(permissionKey) ||
+          rp.permission?.key?.includes(`${route}_[${Actions.MANAGE}]`),
+      ),
+    );
 
-    // return isExistPermission ? true : false;
+    return isExistPermission ? true : false;
   }
 }
