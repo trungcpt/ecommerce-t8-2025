@@ -1,5 +1,5 @@
 import { $Enums, Prisma } from '@prisma/client';
-// import { ImportExcel } from '../../../common/utils/excel-util/excel-util.const';
+import { ImportExcel } from '../../../common/utils/excel-util/excel-util.const';
 export class CreateUserDto implements Prisma.UserCreateInput {
   id?: string | undefined;
   email: string;
@@ -16,11 +16,11 @@ export class CreateUserDto implements Prisma.UserCreateInput {
   createdBy?: string | null | undefined;
   updatedAt?: string | Date | undefined;
   deletedAt?: string | Date | null | undefined;
-  // vendors?: Prisma.VendorCreateNestedManyWithoutUserInput | undefined;
-  // userVendorRoles?:
-  //   | Prisma.UserVendorRoleCreateNestedManyWithoutUserInput
-  //   | undefined;
+  vendors?: Prisma.VendorCreateNestedManyWithoutUserInput | undefined;
+  userVendorRoles?:
+    | Prisma.UserVendorRoleCreateNestedManyWithoutUserInput
+    | undefined;
   // orders?: Prisma.OrderCreateNestedManyWithoutUserInput | undefined;
 }
 
-// export class ImportUsersDto extends ImportExcel {}
+export class ImportUsersDto extends ImportExcel {}

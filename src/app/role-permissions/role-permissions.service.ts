@@ -209,6 +209,7 @@ export class RolePermissionsService extends PrismaBaseService<'rolePermission'> 
           select: {
             id: true,
             name: true,
+            key: true,
             description: true,
           },
         },

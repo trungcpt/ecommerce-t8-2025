@@ -21,6 +21,9 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 import { QueryUtilModule } from '../common/utils/query-util/query-util.module';
 import { FileUtilModule } from '../common/utils/file-util/file-util.module';
+import { VendorsModule } from './vendors/vendors.module';
+import { UserVendorRolesModule } from './user-vendor-roles/user-vendor-roles.module';
+import { ProductImagesModule } from './product-images/product-images.module';
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { FileUtilModule } from '../common/utils/file-util/file-util.module';
     RolePermissionsModule,
     QueryUtilModule,
     FileUtilModule,
+    VendorsModule,
+    UserVendorRolesModule,
+    ProductImagesModule,
   ],
   controllers: [AppController, ProductsController],
   providers: [

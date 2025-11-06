@@ -77,6 +77,7 @@ model Vendor {
   user            User             @relation(fields: [userID], references: [id]) // foreign key
   // products        Product[]
   userVendorRoles UserVendorRole[]
+  products        Product[]
 }
 
 model Role {
@@ -136,4 +137,96 @@ model UserVendorRole {
   role   Role   @relation(fields: [roleID], references: [id])
 
   @@unique([userID, vendorID])
+}
+
+enum ProductStatus {
+  active
+  inactive
+  draft
+}
+
+model Product {
+  id            String        @id @default(uuid())
+  vendorID      String
+  name          String
+  slug          String        @unique
+  description   String?
+  sku           String?       @unique
+  price         Decimal
+  stockQuantity Int           @default(0)
+  status        ProductStatus @default(draft)
+  createdAt     DateTime      @default(now())
+  createdBy     String?
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
+  vendor            Vendor            @relation(fields: [vendorID], references: [id])
+  productCategories ProductCategory[]
+  productImages     ProductImage[]
+  productVariants   ProductVariant[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  parentID    String?
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  parent            Category?         @relation("CategoryParent", fields: [parentID], references: [id])
+  children          Category[]        @relation("CategoryParent")
+  productCategories ProductCategory[]
+}
+
+model ProductCategory {
+  productID  String
+  categoryID String
+
+  product  Product  @relation(fields: [productID], references: [id])
+  category Category @relation(fields: [categoryID], references: [id])
+
+  @@id([productID, categoryID])
+}
+
+model ProductVariant {
+  id            String    @id @default(uuid())
+  productID     String
+  name          String?
+  sku           String?   @unique
+  price         Decimal
+  stockQuantity Int       @default(0)
+  attributes    Json?
+  createdAt     DateTime  @default(now())
+  createdBy     String?
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  product       Product        @relation(fields: [productID], references: [id])
+  productImages ProductImage[]
+  // orderItems    OrderItem[]
+  // cartItems     CartItem[]
+}
+
+model ProductImage {
+  id               String    @id @default(uuid())
+  name             String
+  description      String?
+  // Nếu productID có giá trị → ảnh thuộc product gốc (ảnh chung).
+  productID        String?
+  // Nếu productVariantID có giá trị → ảnh gắn với variant.
+  productVariantID String?
+  imageUrl         String
+  sortOrder        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  createdBy        String?
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  product        Product?        @relation(fields: [productID], references: [id])
+  productVariant ProductVariant? @relation(fields: [productVariantID], references: [id])
 }

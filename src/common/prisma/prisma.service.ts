@@ -11,6 +11,9 @@ import { omit } from 'es-toolkit';
 // import { Category } from '../../app/categories/entities/category.entity';
 import { StringUtilService } from '../utils/string-util/string-util.service';
 import { DateUtilService } from '../utils/date-util/date-util.service';
+import { Vendor } from '../../app/vendors/entities/vendor.entity';
+import { RolePermission } from '../../app/role-permissions/entities/role-permission.entity';
+import { UserVendorRole } from '../../app/user-vendor-roles/entities/user-vendor-role.entity';
 @Injectable()
 export class PrismaService
   extends PrismaClient
@@ -72,16 +75,23 @@ export class PrismaService
   }
 
   private generateData<T>(data: T, model: string) {
-    // const modelsGenSlug = [Product.name, Vendor.name, Category.name];
-    const modelsGenSlug = [''];
+    const modelsGenSlug = [Vendor.name];
     if (modelsGenSlug.includes(model)) {
-      const slug = this.stringUtilService.toSlug(data['name']);
-      return { ...data, slug };
+      if (Array.isArray(data)) {
+        const result = data.map((item) => ({
+          ...item,
+          slug: this.stringUtilService.toSlug(item['name']),
+        })) as T;
+        data = result;
+      } else {
+        const slug = this.stringUtilService.toSlug(data['name']);
+        return { ...data, slug };
+      }
     }
     return data;
   }
 
-  private readonly JUNCTION_TABLES = ['RolePermission'];
+  private readonly JUNCTION_TABLES = [RolePermission.name, UserVendorRole.name];
 
   initExtended() {
     const extended = this.$extends({
