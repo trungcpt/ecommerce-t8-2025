@@ -13,6 +13,7 @@ import { UploadProductImagesDto } from './dto/create-product-images.dto';
 import { UploadApiResponse } from 'cloudinary';
 import { FileUtilService } from '../../common/utils/file-util/file-util.service';
 import { PrismaBaseService } from '../../common/services/prisma-base.service';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ProductImagesService extends PrismaBaseService<'productImage'> {
@@ -24,6 +25,7 @@ export class ProductImagesService extends PrismaBaseService<'productImage'> {
     public prismaService: PrismaService,
     private excelUtilService: ExcelUtilService,
     private fileUtilService: FileUtilService,
+    private eventEmitter: EventEmitter2,
   ) {
     super(prismaService, 'productImage');
   }
@@ -112,42 +114,82 @@ export class ProductImagesService extends PrismaBaseService<'productImage'> {
     return data;
   }
 
-  async uploadProductImages({ files, user }: UploadProductImagesDto) {
+  uploadProductImages({ files, user }: UploadProductImagesDto) {
     const data: ProductImage[] = [];
     for (const file of files) {
-      const fileName = this.fileUtilService.removeFileExtension(
-        file.originalname,
-      );
-      const productImageExist = await this.getProductImage({
-        name: fileName,
-      });
-      if (productImageExist) {
-        await this.fileUtilService.removeImage(file);
-      }
+      // const fileName = this.fileUtilService.removeFileExtension(
+      //   file.originalname,
+      // );
+      // const productImageExist = await this.getProductImage({
+      //   name: fileName,
+      // });
+      // if (productImageExist) {
+      //   await this.fileUtilService.removeImage(file);
+      // }
 
-      const { url, secure_url, display_name, created_at } =
-        await this.fileUtilService.uploadImage<UploadApiResponse>(file);
-      const dataUpsert = {
-        name: display_name,
-        description: display_name,
-        imageUrl: secure_url ?? url,
+      // const { url, secure_url, display_name, created_at } =
+      //   await this.fileUtilService.uploadImage<UploadApiResponse>(file);
+      // const dataUpsert = {
+      //   name: display_name,
+      //   description: display_name,
+      //   imageUrl: secure_url ?? url,
+      //   user,
+      // };
+      // const result = await this.extended.upsert({
+      //   create: {
+      //     ...dataUpsert,
+      //     createdAt: created_at,
+      //   },
+      //   update: {
+      //     ...dataUpsert,
+      //   },
+      //   where: {
+      //     id: productImageExist?.id ?? '',
+      //   },
+      // });
+      // data.push(result);
+
+      this.eventEmitter.emit('product-images.upload', {
+        file,
         user,
-      };
-      const result = await this.extended.upsert({
-        create: {
-          ...dataUpsert,
-          createdAt: created_at,
-        },
-        update: {
-          ...dataUpsert,
-        },
-        where: {
-          id: productImageExist?.id ?? '',
-        },
       });
-      data.push(result);
     }
 
     return data;
+  }
+
+  @OnEvent('product-images.upload')
+  async uploadProductImagesEvent(payload) {
+    const { file, user } = payload;
+    const fileName = this.fileUtilService.removeFileExtension(
+      file.originalname,
+    );
+    const productImageExist = await this.getProductImage({
+      name: fileName,
+    });
+    if (productImageExist) {
+      await this.fileUtilService.removeImage(file);
+    }
+    const { url, secure_url, display_name, created_at } =
+      await this.fileUtilService.uploadImage<UploadApiResponse>(file);
+    const dataUpsert = {
+      name: display_name,
+      description: display_name,
+      imageUrl: secure_url ?? url,
+      user,
+    };
+    const result = await this.extended.upsert({
+      create: {
+        ...dataUpsert,
+        createdAt: created_at,
+      },
+      update: {
+        ...dataUpsert,
+      },
+      where: {
+        id: productImageExist?.id ?? '',
+      },
+    });
+    return result;
   }
 }

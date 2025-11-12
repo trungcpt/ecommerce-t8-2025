@@ -24,6 +24,10 @@ import { FileUtilModule } from '../common/utils/file-util/file-util.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { UserVendorRolesModule } from './user-vendor-roles/user-vendor-roles.module';
 import { ProductImagesModule } from './product-images/product-images.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventsModule } from '../events/events.module';
+import { CacheUtilModule } from '../common/utils/cache-util/cache-util.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -45,6 +49,10 @@ import { ProductImagesModule } from './product-images/product-images.module';
     VendorsModule,
     UserVendorRolesModule,
     ProductImagesModule,
+    ProductsModule,
+    EventEmitterModule.forRoot(),
+    EventsModule,
+    CacheUtilModule,
   ],
   controllers: [AppController, ProductsController],
   providers: [

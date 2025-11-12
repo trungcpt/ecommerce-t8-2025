@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma, VendorStatus } from '@prisma/client';
 import { ExcelUtilService } from '../../common/utils/excel-util/excel-util.service';
 import { CreateUserDto, ImportUsersDto } from './dto/create-user.dto';
@@ -18,6 +18,7 @@ import {
 } from '../../common/query/options.interface';
 import { PaginationUtilService } from '../../common/utils/pagination-util/pagination-util.service';
 import { QueryUtilService } from '../../common/utils/query-util/query-util.service';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 @Injectable()
 export class UsersService
   extends PrismaBaseService<'user'>
@@ -32,6 +33,7 @@ export class UsersService
     public prismaService: PrismaService,
     private paginationUtilService: PaginationUtilService,
     private queryUtil: QueryUtilService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(prismaService, 'user');
   }
@@ -52,9 +54,9 @@ export class UsersService
   }
 
   async getUsers({ page, itemPerPage }: GetUsersPaginationDto) {
-    // const usersCacheKey = this.getUsers.name;
-    // const usersCached = await this.cacheManager.get(usersCacheKey);
-    // if (usersCached) return usersCached;
+    const usersCacheKey = this.getUsers.name;
+    const usersCached = await this.cacheManager.get(usersCacheKey);
+    if (usersCached) return usersCached;
 
     const totalItems = await this.extended.count();
     const paging = this.paginationUtilService.paging({
@@ -68,7 +70,7 @@ export class UsersService
     });
 
     const data = paging.format(list);
-    // await this.cacheManager.set(usersCacheKey, data);
+    await this.cacheManager.set(usersCacheKey, data);
     return data;
   }
 

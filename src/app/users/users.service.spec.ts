@@ -15,6 +15,8 @@ describe('UsersService', () => {
   });
 
   it('should be defined', () => {
+    // const data = await service.getUsers({ itemPerPage: 10, page: 1 });
+    // console.log('>>> data', data);
     expect(service).toBeDefined();
   });
 });
