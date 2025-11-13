@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
-type ExtendedClient = PrismaService['extended'];
-
 export class PrismaBaseService<K extends keyof PrismaClient> {
   constructor(
     protected prismaService: PrismaService,
@@ -13,7 +11,11 @@ export class PrismaBaseService<K extends keyof PrismaClient> {
     return this.prismaService[this.model];
   }
 
-  protected get extended(): ExtendedClient[K] {
-    return this.prismaService.extended[this.model];
+  // protected get extended(): ExtendedClient[K] {
+  //   return this.prismaService.extended[this.model];
+  // }
+
+  protected get extended(): any {
+    return this.prismaService.extended[this.model as any];
   }
 }
