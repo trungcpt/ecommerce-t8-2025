@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { JWTEnvs } from './consts/jwt.const';
 import { StringUtilService } from '../../common/utils/string-util/string-util.service';
+import { UsersModule } from '../users/users.module';
+import { JWTEnvs } from './consts/jwt.const';
+import { MailUtilService } from '../../common/utils/mail-util/mail-util.service';
 
 @Module({
   imports: [
@@ -19,8 +20,7 @@ import { StringUtilService } from '../../common/utils/string-util/string-util.se
     }),
   ],
   controllers: [AuthController],
-  // providers: [AuthService, StringUtilService, MailUtilService],
-  providers: [AuthService, StringUtilService],
+  providers: [AuthService, StringUtilService, MailUtilService],
   exports: [AuthService],
 })
 export class AuthModule {}

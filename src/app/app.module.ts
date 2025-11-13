@@ -28,6 +28,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventsModule } from '../events/events.module';
 import { CacheUtilModule } from '../common/utils/cache-util/cache-util.module';
 import { ProductsModule } from './products/products.module';
+import { MailUtilModule } from '../common/utils/mail-util/mail-util.module';
+import { RateLimitModule } from '../common/security/rate-limit/rate-limit.module';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -53,6 +56,8 @@ import { ProductsModule } from './products/products.module';
     EventEmitterModule.forRoot(),
     EventsModule,
     CacheUtilModule,
+    MailUtilModule,
+    RateLimitModule,
   ],
   controllers: [AppController, ProductsController],
   providers: [
@@ -85,6 +90,10 @@ import { ProductsModule } from './products/products.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: FormatResponseInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
